@@ -7,10 +7,10 @@ calculate = Calculate()
 
 
 #データのロード
-with open('L:/マイドライブ/研究用/HuffModel/100_pop.geojson', 'r', encoding="utf-8") as f:
+with open('100_pop.geojson', 'r', encoding="utf-8") as f:
     pop = json.load(f)
 
-with open('L:/マイドライブ/研究用/HuffModel/AB_com.geojson', 'r', encoding="utf-8") as f:
+with open('AB_com.geojson', 'r', encoding="utf-8") as f:
     com = json.load(f)
 
 #100mメッシュの点を取得
