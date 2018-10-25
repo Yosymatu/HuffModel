@@ -27,18 +27,22 @@ def main():
     #keycodeの取得
     pop_keycodeList = [i['properties']['KEYCODE'] for i in pop['features']]
 
-    exportList =[]
+    exportList = []
 
-    for i in range(1, 20):
-        for j in range(1, 20):
-            predictList = calculate.PredictSale(pop_ptList, pop_popList, com_ptList, com_areaList, i*0.1, j*0.1)
-            mrs = calculate.MRS(predictList, com_saleList)
-            exportList.append(mrs)
-            print('area:' , i*0.1 , ', dist:' , j*0.1 , ', mrs:' , mrs)
+    allpop_popbyList = []
+    for j in tqdm.trange(len(pop_ptList)):
+        disj = np.array([abs(calculate.Dist(pop_ptList[j], i, True)) for i in com_ptList])
+        Pij = calculate.oneAttract(disj, com_areaList, 0.6, 1.3)
         
-    
-    export = np.array(exportList)
-    np.savetxt('out.csv',export,delimiter=',')
+        #人口をかける
+        pop_popbyList = np.array([kPij*pop_popList[j] for kPij in Pij])
+        #二次元配列にする
+        allpop_popbyList.append(pop_popbyList)
+        pass
+
+    export = np.array(allpop_popbyList)
+    np.savetxt('out.csv', export, delimiter=',')
+
 
 if __name__ == "__main__":
     main()
