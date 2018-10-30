@@ -98,18 +98,6 @@ class Calculate(object):
                 ln[i] = 0
         return ln
 
-
-    def MRS(self, predictList, expectList):
-        '''
-        expectListからpredictListを引き最小二乗和を求める
-        @param predictList 予測値
-        @param expectedList 理論値
-        @return 最小二乗和
-        '''
-        mrsi = np.array([(expectListi - predictListi)**2 for expectListi, predictListi in zip(predictList, expectList)])
-        mrs = np.sum(mrsi)
-        return mrs
-
     def PredictSale(self, pop_ptList, pop_popList, com_ptList, com_areaList, area, dist):
         '''
         予測値を求めるメソッド
@@ -124,17 +112,16 @@ class Calculate(object):
         for j in tqdm.trange(len(pop_ptList)):
             disj = np.array([abs(self.Dist(pop_ptList[j], i, True)) for i in com_ptList])
             Pij = self.oneAttract(disj, com_areaList, area, dist)
-            
             #人口をかける
             pop_popbyList = np.array([kPij*pop_popList[j] for kPij in Pij])
             #二次元配列にする
             allpop_popbyList.append(pop_popbyList)
             pass
+
         #集客ポテンシャルの算出
         #転置して各店舗ごとを行にする
         allpop_popbyListT = list(map(list, zip(*allpop_popbyList)))
         #行ごとに合計値を出して、店舗ごとを足し合わせる
         predictSale = np.array([sum(i) for i in allpop_popbyListT])
-        predictSale *= self.k
 
         return predictSale
