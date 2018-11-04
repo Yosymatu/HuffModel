@@ -1,17 +1,21 @@
 import numpy as np
 import json
+# import numba
 import tqdm
 
 
 #計算クラス群
 class Calculate(object):
 
-    def __init__(self, pathPop, pathCom, k):
+    def __init__(self, pathPop, pathCom):
         self.pathPop = pathPop
         self.pathCom = pathCom
-        self.k = k
 
+    # @numba.jit
     def LoadData(self):
+        '''
+        データを読み込むメソッド
+        '''
         with open(self.pathPop, 'r', encoding="utf-8") as f:
             pop = json.load(f)
         with open(self.pathCom, 'r', encoding="utf-8") as f:
@@ -19,6 +23,7 @@ class Calculate(object):
 
         return pop, com
 
+    # @numba.jit
     #距離を測定
     def Dist(self, p1, p2, mode):
         '''
@@ -68,7 +73,8 @@ class Calculate(object):
 
         return dist
 
-    def oneAttract(self, distList, areaList, area, dist):
+    # @numba.jit
+    def oneAttract(self, sareaList, lareaList, distList, sarea, larea, dist):
         '''
         顧客が店舗(dist, area)での確率を求めるメソッド
         参照 http://desktop.arcgis.com/ja/arcmap/10.3/tools/business-analyst-toolbox/how-original-huff-model-works.htm
@@ -79,26 +85,15 @@ class Calculate(object):
         @return 店舗の魅力度のリスト
         '''
         #すべての店舗の魅力度を計算
-        WList = np.array([np.power(iarea, area)/np.power(idist, dist) for idist, iarea in zip(distList, areaList)])
+        WList = [(np.float_power(isarea, sarea) + np.float_power(ilarea, larea))/np.float_power(idist, dist) for isarea, ilarea, idist in zip(sareaList, lareaList, distList)]
         sigma_WList = np.sum(WList)
 
         #すべての店舗へ行く確率を計算
         PList = np.array([iW/sigma_WList for iW in WList])
-
         return PList
 
-    def CleanList(self, ln):
-        '''
-        リストの-9999を0に変換する
-        @param ln 変換するリスト
-        @return 変換後のリスト
-        '''
-        for i in range(len(ln)):
-            if ln[i] == -9999.0:
-                ln[i] = 0
-        return ln
-
-    def PredictSale(self, pop_ptList, pop_popList, com_ptList, com_areaList, area, dist):
+    # @numba.jit
+    def PredictSale(self, pop_ptList, pop_popList, com_ptList, com_sareaList, sarea, com_lareaList, larea, dist, distHosei):
         '''
         予測値を求めるメソッド
         @param pop_ptList 人口メッシュの緯度経度リスト
@@ -110,8 +105,8 @@ class Calculate(object):
         '''
         allpop_popbyList = []
         for j in tqdm.trange(len(pop_ptList)):
-            disj = np.array([abs(self.Dist(pop_ptList[j], i, True)) for i in com_ptList])
-            Pij = self.oneAttract(disj, com_areaList, area, dist)
+            distList = np.array([abs(self.Dist(pop_ptList[j], i, True)) + distHosei for i in com_ptList])
+            Pij = self.oneAttract(com_sareaList, com_lareaList, distList, sarea, larea, dist)
             #人口をかける
             pop_popbyList = np.array([kPij*pop_popList[j] for kPij in Pij])
             #二次元配列にする
