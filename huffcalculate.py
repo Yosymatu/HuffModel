@@ -98,7 +98,7 @@ class Calculate(object):
                 ln[i] = 0
         return ln
 
-    def PredictSale(self, pop_ptList, pop_popList, com_ptList, com_areaList, area, dist):
+    def PredictSale(self, pop_ptList, pop_popList, com_ptList, com_areaList, area, dist, distHosei):
         '''
         予測値を求めるメソッド
         @param pop_ptList 人口メッシュの緯度経度リスト
@@ -106,11 +106,12 @@ class Calculate(object):
         @param com_ptList 商業施設の緯度経度リスト
         @param com_areaList 商業施設の売り場面積リスト
         @param area,dist 面積補正係数,距離補正係数
+        @param distHosei 距離の補正
         @return predictSale 売上の予測値
         '''
         allpop_popbyList = []
         for j in tqdm.trange(len(pop_ptList)):
-            disj = np.array([abs(self.Dist(pop_ptList[j], i, True)) for i in com_ptList])
+            disj = np.array([abs(self.Dist(pop_ptList[j], i, True)) + distHosei for i in com_ptList])
             Pij = self.oneAttract(disj, com_areaList, area, dist)
             #人口をかける
             pop_popbyList = np.array([kPij*pop_popList[j] for kPij in Pij])
