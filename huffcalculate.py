@@ -6,10 +6,9 @@ import tqdm
 #計算クラス群
 class Calculate(object):
 
-    def __init__(self, pathPop, pathCom, k):
+    def __init__(self, pathPop, pathCom):
         self.pathPop = pathPop
         self.pathCom = pathCom
-        self.k = k
 
     def LoadData(self):
         with open(self.pathPop, 'r', encoding="utf-8") as f:
